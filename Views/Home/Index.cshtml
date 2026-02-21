@@ -1,0 +1,205 @@
+@model DashboardVM
+@{
+    ViewData["Title"] = "Dashboard";
+    string J(List<ChartItem> items, bool labels = true) =>
+        labels
+            ? "[" + string.Join(",", items.Select(x => $"\"{x.Label}\"")) + "]"
+            : "[" + string.Join(",", items.Select(x => x.Value)) + "]";
+}
+
+<!-- ── Stat Cards ─────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#1a237e,#1976d2);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value">@Model.TotalRecords</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-phone-volume"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#15803d,#16a34a);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value">@Model.TodayRecords</div>
+                    <div class="stat-label">Today</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#b45309,#d97706);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value">@Model.ThisMonthCount</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#0e7490,#0891b2);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value">@Model.BookedCount</div>
+                    <div class="stat-label">Booked (Yes)</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#7e22ce,#9333ea);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value">@Model.TotalDoctors</div>
+                    <div class="stat-label">Doctors</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-user-md"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card" style="background:linear-gradient(135deg,#be123c,#e11d48);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value">@Model.TotalStaff</div>
+                    <div class="stat-label">Staff Members</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Quick Actions ─────────────────────────────────────────────── -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a asp-controller="CallCenter" asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> New Record
+    </a>
+    <a asp-controller="CallCenter" asp-action="Import" class="btn btn-outline-success">
+        <i class="fas fa-file-import me-1"></i> Import Excel
+    </a>
+    <a asp-controller="CallCenter" asp-action="ExportExcel" class="btn btn-outline-secondary">
+        <i class="fas fa-file-export me-1"></i> Export Excel
+    </a>
+    <a asp-controller="Reports" asp-action="Summary" class="btn btn-outline-info">
+        <i class="fas fa-chart-bar me-1"></i> Reports
+    </a>
+</div>
+
+<!-- ── Charts Row 1 ──────────────────────────────────────────────── -->
+<div class="row g-3 mb-3">
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header-blue">
+                <i class="fas fa-chart-line me-2"></i> Records — Last 7 Days
+            </div>
+            <div class="card-body">
+                <canvas id="chartDays" height="90"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header-blue">
+                <i class="fas fa-bullseye me-2"></i> By Call Purpose
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="chartPurpose" height="180"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Charts Row 2 ──────────────────────────────────────────────── -->
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header-blue">
+                <i class="fas fa-building me-2"></i> By Department
+            </div>
+            <div class="card-body">
+                <canvas id="chartDept" height="160"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header-blue">
+                <i class="fas fa-users me-2"></i> By Staff
+            </div>
+            <div class="card-body">
+                <canvas id="chartStaff" height="160"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header-blue">
+                <i class="fas fa-flag me-2"></i> By Nationality
+            </div>
+            <div class="card-body">
+                <canvas id="chartNation" height="160"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16'];
+
+function bar(id, labels, data, color) {
+    new Chart(document.getElementById(id), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{ data, backgroundColor: color ?? COLORS[0], borderRadius: 6 }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+function doughnut(id, labels, data) {
+    new Chart(document.getElementById(id), {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data, backgroundColor: COLORS, hoverOffset: 6 }] },
+        options: {
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+            cutout: '55%'
+        }
+    });
+}
+
+// Last 7 days — line
+new Chart(document.getElementById('chartDays'), {
+    type: 'line',
+    data: {
+        labels: @Html.Raw(J(Model.Last7Days)),
+        datasets: [{
+            label: 'Records',
+            data: @Html.Raw(J(Model.Last7Days, false)),
+            borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)',
+            tension: .4, fill: true, pointRadius: 5
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+});
+
+doughnut('chartPurpose', @Html.Raw(J(Model.ByCallPurpose)), @Html.Raw(J(Model.ByCallPurpose, false)));
+bar('chartDept',  @Html.Raw(J(Model.ByDepartment)), @Html.Raw(J(Model.ByDepartment, false)));
+bar('chartStaff', @Html.Raw(J(Model.ByStaff)),      @Html.Raw(J(Model.ByStaff, false)), '#8b5cf6');
+bar('chartNation',@Html.Raw(J(Model.ByNationality)),@Html.Raw(J(Model.ByNationality, false)), '#10b981');
+</script>
+}

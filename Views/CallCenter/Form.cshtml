@@ -1,0 +1,136 @@
+@model CustomerServicesSystem.ViewModels.CallCenterFormVM
+@{
+    bool isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Edit Record" : "New Record";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">
+        <i class="fas fa-@(isEdit ? "edit" : "plus-circle") text-primary me-2"></i>
+        @(isEdit ? "Edit Record" : "New Call Center Record")
+    </h4>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header-blue">
+        <i class="fas fa-phone-volume me-2"></i>
+        @(isEdit ? "Update Record" : "Enter Record Details")
+    </div>
+    <div class="card-body p-4">
+        <form asp-action="Save" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <!-- Row 1: Basic Info -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Date <span class="text-danger">*</span></label>
+                    <input asp-for="RecordDate" type="date" class="form-control" />
+                    <span asp-validation-for="RecordDate" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Patient Name</label>
+                    <input asp-for="PatientName" class="form-control" placeholder="Full name" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Gender</label>
+                    <select asp-for="Gender" class="form-select">
+                        <option value="">-- Select --</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">File No.</label>
+                    <input asp-for="FileNo" class="form-control" placeholder="File number" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Contact No.</label>
+                    <input asp-for="ContactNo" class="form-control" placeholder="Phone number" />
+                </div>
+            </div>
+
+            <hr class="my-3" />
+            <h6 class="text-muted mb-3"><i class="fas fa-tags me-1"></i> Classification</h6>
+
+            <!-- Row 2: Dropdowns 1 -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Nationality</label>
+                    <select asp-for="NationalityId" asp-items="ViewBag.Nationalities" class="form-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Call Purpose</label>
+                    <select asp-for="CallPurposeId" asp-items="ViewBag.CallPurposes" class="form-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Visit Type</label>
+                    <select asp-for="VisitTypeId" asp-items="ViewBag.VisitTypes" class="form-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Outcome of Call</label>
+                    <select asp-for="OutcomeOfCallId" asp-items="ViewBag.OutcomesOfCall" class="form-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Row 3: Dropdowns 2 -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Doctor Name</label>
+                    <select asp-for="DoctorId" asp-items="ViewBag.Doctors" class="form-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Department</label>
+                    <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="form-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Booked</label>
+                    <select asp-for="BookedStatusId" asp-items="ViewBag.BookedStatuses" class="form-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Staff Name</label>
+                    <select asp-for="StaffMemberId" asp-items="ViewBag.StaffMembers" class="form-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Source</label>
+                    <select asp-for="SourceId" asp-items="ViewBag.Sources" class="form-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Notes</label>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
+            </div>
+
+            <hr class="my-3" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="fas fa-save me-1"></i> @(isEdit ? "Save Changes" : "Add Record")
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

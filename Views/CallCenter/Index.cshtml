@@ -1,0 +1,212 @@
+@model IEnumerable<CustomerServicesSystem.Models.CallCenterRecord>
+@{
+    ViewData["Title"] = "Call Center Records";
+    var filter = ViewBag.Filter as CustomerServicesSystem.ViewModels.CallCenterFilterVM
+                 ?? new CustomerServicesSystem.ViewModels.CallCenterFilterVM();
+    int page       = (int)(ViewBag.Page ?? 1);
+    int totalPages = (int)(ViewBag.TotalPages ?? 1);
+    int total      = (int)(ViewBag.TotalRecords ?? 0);
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0"><i class="fas fa-phone-volume text-primary me-2"></i>Call Center Records</h4>
+        <small class="text-muted">@total record(s) found</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Import" class="btn btn-outline-success btn-sm">
+            <i class="fas fa-file-import me-1"></i> Import
+        </a>
+        <a asp-action="ExportExcel"
+           asp-route-patientName="@filter.PatientName"
+           asp-route-callPurposeId="@filter.CallPurposeId"
+           asp-route-staffMemberId="@filter.StaffMemberId"
+           asp-route-bookedStatusId="@filter.BookedStatusId"
+           asp-route-departmentId="@filter.DepartmentId"
+           asp-route-dateFrom="@filter.DateFrom?.ToString("yyyy-MM-dd")"
+           asp-route-dateTo="@filter.DateTo?.ToString("yyyy-MM-dd")"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-file-excel me-1"></i> Export
+        </a>
+        <a asp-action="Create" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i> Add Record
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Patient Name</label>
+                <input type="text" name="PatientName" value="@filter.PatientName"
+                       class="form-control form-control-sm" placeholder="Search..." />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Call Purpose</label>
+                <select name="CallPurposeId" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    @Html.Raw(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+                        ((Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.CallPurposes).Items,
+                        "Value","Text", filter.CallPurposeId?.ToString()).ToHtmlString())
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Staff</label>
+                <select name="StaffMemberId" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    @Html.Raw(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+                        ((Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.StaffMembers).Items,
+                        "Value","Text", filter.StaffMemberId?.ToString()).ToHtmlString())
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Booked</label>
+                <select name="BookedStatusId" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    @Html.Raw(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+                        ((Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.BookedStatuses).Items,
+                        "Value","Text", filter.BookedStatusId?.ToString()).ToHtmlString())
+                </select>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small mb-1">From</label>
+                <input type="date" name="DateFrom"
+                       value="@filter.DateFrom?.ToString("yyyy-MM-dd")"
+                       class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small mb-1">To</label>
+                <input type="date" name="DateTo"
+                       value="@filter.DateTo?.ToString("yyyy-MM-dd")"
+                       class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="fas fa-search me-1"></i>Search
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 small">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Patient Name</th>
+                        <th>Gender</th>
+                        <th>Contact No</th>
+                        <th>Nationality</th>
+                        <th>Call Purpose</th>
+                        <th>Visit Type</th>
+                        <th>Outcome</th>
+                        <th>Doctor</th>
+                        <th>Department</th>
+                        <th>Booked</th>
+                        <th>Staff</th>
+                        <th>Source</th>
+                        <th class="text-center" style="width:90px">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="14" class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fa-2x d-block mb-2 opacity-25"></i>
+                                No records found.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td class="text-nowrap">@r.RecordDate.ToString("yyyy-MM-dd")</td>
+                            <td>@r.PatientName</td>
+                            <td>@r.Gender</td>
+                            <td>@r.ContactNo</td>
+                            <td>@r.Nationality?.Name</td>
+                            <td>
+                                <span class="badge rounded-pill" style="background:#dbeafe;color:#1e40af;font-weight:500;">
+                                    @r.CallPurpose?.Name
+                                </span>
+                            </td>
+                            <td>@r.VisitType?.Name</td>
+                            <td>@r.OutcomeOfCall?.Name</td>
+                            <td>@r.Doctor?.Name</td>
+                            <td>@r.Department?.Name</td>
+                            <td>
+                                @{
+                                    var bName = r.BookedStatus?.Name ?? "";
+                                    var bClass = bName == "Yes" ? "badge-booked-yes"
+                                               : bName == "No"  ? "badge-booked-no"
+                                               :                  "badge-booked-pnd";
+                                }
+                                <span class="badge rounded-pill @bClass">@bName</span>
+                            </td>
+                            <td>@r.StaffMember?.Name</td>
+                            <td>@r.Source?.Name</td>
+                            <td class="text-center text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@r.Id"
+                                   class="btn btn-sm btn-warning py-0 px-2" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@r.Id" method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Delete this record?')">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-sm btn-danger py-0 px-2" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+                <small class="text-muted">Page @page of @totalPages</small>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        @if (page > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(page-1)"
+                                   asp-route-patientName="@filter.PatientName">‹</a>
+                            </li>
+                        }
+                        @for (int p = Math.Max(1, page-2); p <= Math.Min(totalPages, page+2); p++)
+                        {
+                            <li class="page-item @(p == page ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@p"
+                                   asp-route-patientName="@filter.PatientName">@p</a>
+                            </li>
+                        }
+                        @if (page < totalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(page+1)"
+                                   asp-route-patientName="@filter.PatientName">›</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>

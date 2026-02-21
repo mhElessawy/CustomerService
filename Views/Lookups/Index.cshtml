@@ -1,0 +1,82 @@
+@model LookupIndexVM
+@{ ViewData["Title"] = Model.LookupTitle; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0"><i class="@Model.LookupIcon text-primary me-2"></i>@Model.LookupTitle</h4>
+        <small class="text-muted">Manage @Model.LookupTitle definitions</small>
+    </div>
+    <a asp-action="Form" asp-route-type="@Model.LookupType" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> Add New
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header-blue d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-list me-2"></i>@Model.LookupTitle List</span>
+        <span class="badge bg-white text-primary fw-bold">@Model.Items.Count items</span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Items.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="@Model.LookupIcon fa-3x mb-3 d-block opacity-25"></i>
+                <p>No items yet.</p>
+                <a asp-action="Form" asp-route-type="@Model.LookupType" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Add First Item
+                </a>
+            </div>
+        }
+        else
+        {
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:60px">#</th>
+                        <th>Name</th>
+                        <th class="text-center" style="width:120px">Status</th>
+                        <th class="text-center" style="width:130px">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="text-muted small">@item.Id</td>
+                            <td>
+                                <i class="@Model.LookupIcon text-primary me-2 opacity-50 small"></i>
+                                @item.Name
+                            </td>
+                            <td class="text-center">
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge rounded-pill" style="background:#dcfce7;color:#15803d;">
+                                        <i class="fas fa-circle me-1" style="font-size:7px;"></i>Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-secondary">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Form" asp-route-type="@Model.LookupType" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-warning me-1" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-type="@Model.LookupType"
+                                      asp-route-id="@item.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Delete \'@item.Name\'?')">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-sm btn-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

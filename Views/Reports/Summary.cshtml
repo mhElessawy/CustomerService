@@ -1,0 +1,220 @@
+@model IEnumerable<CustomerServicesSystem.Models.CallCenterRecord>
+@{
+    ViewData["Title"] = "Monthly Report";
+    int month = (int)ViewBag.Month;
+    int year  = (int)ViewBag.Year;
+
+    List<CustomerServicesSystem.ViewModels.ChartItem> ByPurpose  = ViewBag.ByPurpose;
+    List<CustomerServicesSystem.ViewModels.ChartItem> ByStaff    = ViewBag.ByStaff;
+    List<CustomerServicesSystem.ViewModels.ChartItem> ByDept     = ViewBag.ByDept;
+    List<CustomerServicesSystem.ViewModels.ChartItem> ByNation   = ViewBag.ByNation;
+    List<CustomerServicesSystem.ViewModels.ChartItem> ByOutcome  = ViewBag.ByOutcome;
+
+    string J(List<CustomerServicesSystem.ViewModels.ChartItem> items, bool labels = true) =>
+        labels ? "[" + string.Join(",", items.Select(x => $"\"{x.Label}\"")) + "]"
+               : "[" + string.Join(",", items.Select(x => x.Value)) + "]";
+
+    var months = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames;
+}
+
+<!-- Filter -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Month</label>
+                <select name="month" class="form-select form-select-sm">
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" @(m == month ? "selected" : "")>@months[m-1]</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Year</label>
+                <select name="year" class="form-select form-select-sm">
+                    @for (int y = DateTime.Now.Year - 2; y <= DateTime.Now.Year; y++)
+                    {
+                        <option value="@y" @(y == year ? "selected" : "")>@y</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1">Staff</label>
+                <select name="staffId" asp-items="ViewBag.StaffList" class="form-select form-select-sm">
+                    <option value="">All Staff</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1">Department</label>
+                <select name="deptId" asp-items="ViewBag.DeptList" class="form-select form-select-sm">
+                    <option value="">All Departments</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="fas fa-search me-1"></i>View
+                </button>
+                <a asp-action="ExportSummary"
+                   asp-route-month="@month" asp-route-year="@year"
+                   asp-route-staffId="@ViewBag.StaffId" asp-route-deptId="@ViewBag.DeptId"
+                   class="btn btn-success btn-sm" title="Export to Excel">
+                    <i class="fas fa-file-excel"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Title -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+        <i class="fas fa-chart-bar text-primary me-2"></i>
+        Report — @months[month-1] @year
+    </h4>
+</div>
+
+<!-- Summary Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card" style="background:linear-gradient(135deg,#1a237e,#1976d2);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value">@ViewBag.TotalCount</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-phone-volume"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" style="background:linear-gradient(135deg,#15803d,#16a34a);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value">@ViewBag.BookedYes</div>
+                    <div class="stat-label">Booked — Yes</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" style="background:linear-gradient(135deg,#b91c1c,#dc2626);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value">@ViewBag.BookedNo</div>
+                    <div class="stat-label">Booked — No</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-calendar-xmark"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header-blue"><i class="fas fa-bullseye me-2"></i>By Call Purpose</div>
+            <div class="card-body"><canvas id="cPurpose" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header-blue"><i class="fas fa-check-circle me-2"></i>By Outcome of Call</div>
+            <div class="card-body"><canvas id="cOutcome" height="200"></canvas></div>
+        </div>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header-blue"><i class="fas fa-users me-2"></i>By Staff</div>
+            <div class="card-body"><canvas id="cStaff" height="220"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header-blue"><i class="fas fa-building me-2"></i>By Department</div>
+            <div class="card-body"><canvas id="cDept" height="220"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header-blue"><i class="fas fa-flag me-2"></i>By Nationality</div>
+            <div class="card-body"><canvas id="cNation" height="220"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="card">
+    <div class="card-header-blue d-flex justify-content-between">
+        <span><i class="fas fa-table me-2"></i>Detailed Records</span>
+        <span class="badge bg-white text-primary fw-bold">@Model.Count() rows</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive" style="max-height:400px;overflow-y:auto;">
+            <table class="table table-hover table-sm mb-0 small">
+                <thead style="position:sticky;top:0;">
+                    <tr>
+                        <th>Date</th><th>Patient</th><th>Gender</th><th>Nationality</th>
+                        <th>Call Purpose</th><th>Visit Type</th><th>Outcome</th>
+                        <th>Doctor</th><th>Department</th><th>Booked</th><th>Staff</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.OrderBy(x => x.RecordDate))
+                    {
+                        <tr>
+                            <td>@r.RecordDate.ToString("yyyy-MM-dd")</td>
+                            <td>@r.PatientName</td>
+                            <td>@r.Gender</td>
+                            <td>@r.Nationality?.Name</td>
+                            <td>@r.CallPurpose?.Name</td>
+                            <td>@r.VisitType?.Name</td>
+                            <td>@r.OutcomeOfCall?.Name</td>
+                            <td>@r.Doctor?.Name</td>
+                            <td>@r.Department?.Name</td>
+                            <td>
+                                @{
+                                    var b = r.BookedStatus?.Name ?? "";
+                                    var bc = b == "Yes" ? "badge-booked-yes" : b == "No" ? "badge-booked-no" : "badge-booked-pnd";
+                                }
+                                <span class="badge rounded-pill @bc">@b</span>
+                            </td>
+                            <td>@r.StaffMember?.Name</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16'];
+
+function bar(id, labels, data, col) {
+    new Chart(document.getElementById(id), {
+        type: 'bar',
+        data: { labels, datasets: [{ data, backgroundColor: col || COLORS, borderRadius: 6 }] },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+}
+function doughnut(id, labels, data) {
+    new Chart(document.getElementById(id), {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data, backgroundColor: COLORS, hoverOffset: 6 }] },
+        options: { plugins: { legend: { position:'bottom', labels:{ boxWidth:12, font:{size:11} } } }, cutout:'55%' }
+    });
+}
+
+doughnut('cPurpose', @Html.Raw(J(ByPurpose)),  @Html.Raw(J(ByPurpose, false)));
+doughnut('cOutcome', @Html.Raw(J(ByOutcome)),  @Html.Raw(J(ByOutcome, false)));
+bar('cStaff',  @Html.Raw(J(ByStaff)),  @Html.Raw(J(ByStaff, false)), '#8b5cf6');
+bar('cDept',   @Html.Raw(J(ByDept)),   @Html.Raw(J(ByDept, false)), '#0891b2');
+bar('cNation', @Html.Raw(J(ByNation)), @Html.Raw(J(ByNation, false)), '#10b981');
+</script>
+}
