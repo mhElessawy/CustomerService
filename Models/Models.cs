@@ -29,7 +29,11 @@ namespace CustomerServicesSystem.Models
     public class CallPurpose   : LookupBase { public ICollection<CallCenterRecord> Records { get; set; } = new List<CallCenterRecord>(); }
     public class VisitType     : LookupBase { public ICollection<CallCenterRecord> Records { get; set; } = new List<CallCenterRecord>(); }
     public class OutcomeOfCall : LookupBase { public ICollection<CallCenterRecord> Records { get; set; } = new List<CallCenterRecord>(); }
-    public class Doctor        : LookupBase { public ICollection<CallCenterRecord> Records { get; set; } = new List<CallCenterRecord>(); }
+    public class Doctor        : LookupBase {
+        public int?        DepartmentId { get; set; }
+        public Department? Department   { get; set; }
+        public ICollection<CallCenterRecord> Records { get; set; } = new List<CallCenterRecord>();
+    }
     public class Department    : LookupBase { public ICollection<CallCenterRecord> Records { get; set; } = new List<CallCenterRecord>(); }
     public class BookedStatus  : LookupBase { public ICollection<CallCenterRecord> Records { get; set; } = new List<CallCenterRecord>(); }
     public class StaffMember   : LookupBase { public ICollection<CallCenterRecord> Records { get; set; } = new List<CallCenterRecord>(); }

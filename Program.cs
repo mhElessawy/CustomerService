@@ -41,6 +41,15 @@ using (var scope = app.Services.CreateScope())
     var db      = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 
+    // Add DepartmentId to Doctors if the column doesn't exist yet
+    db.Database.ExecuteSqlRaw(@"
+        IF NOT EXISTS (
+            SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'Doctors' AND COLUMN_NAME = 'DepartmentId'
+        )
+        ALTER TABLE Doctors ADD DepartmentId INT NULL
+    ");
+
     if (await userMgr.FindByEmailAsync("admin@css.com") == null)
     {
         var admin = new ApplicationUser

@@ -13,10 +13,11 @@ namespace CustomerServicesSystem.ViewModels
     // ─── Lookup shared ────────────────────────
     public class LookupItemVM
     {
-        public int    Id       { get; set; }
-        public string Name     { get; set; } = string.Empty;
-        public bool   IsActive { get; set; } = true;
-        public DateTime CreatedAt { get; set; }
+        public int    Id           { get; set; }
+        public string Name         { get; set; } = string.Empty;
+        public bool   IsActive     { get; set; } = true;
+        public DateTime CreatedAt  { get; set; }
+        public int?   DepartmentId { get; set; }  // Doctors only
     }
 
     public class LookupIndexVM
@@ -29,13 +30,14 @@ namespace CustomerServicesSystem.ViewModels
 
     public class LookupFormVM
     {
-        public int    Id          { get; set; }
+        public int    Id           { get; set; }
         [Required(ErrorMessage = "Name is required")]
-        public string Name        { get; set; } = string.Empty;
-        public bool   IsActive    { get; set; } = true;
-        public string LookupType  { get; set; } = string.Empty;
-        public string LookupTitle { get; set; } = string.Empty;
-        public string LookupIcon  { get; set; } = string.Empty;
+        public string Name         { get; set; } = string.Empty;
+        public bool   IsActive     { get; set; } = true;
+        public string LookupType   { get; set; } = string.Empty;
+        public string LookupTitle  { get; set; } = string.Empty;
+        public string LookupIcon   { get; set; } = string.Empty;
+        public int?   DepartmentId { get; set; }  // Doctors only
     }
 
     // ─── Call Center Record ───────────────────

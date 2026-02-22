@@ -84,17 +84,17 @@
                 </div>
             </div>
 
-            <!-- Row 3: Dropdowns 2 -->
+            <!-- Row 3: Dropdowns 2 — Department first, then Doctor (filtered by department) -->
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">Doctor Name</label>
-                    <select asp-for="DoctorId" asp-items="ViewBag.Doctors" class="form-select">
+                    <label class="form-label fw-semibold">Department</label>
+                    <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="form-select" id="DepartmentId">
                         <option value="">-- Select --</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">Department</label>
-                    <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="form-select">
+                    <label class="form-label fw-semibold">Doctor Name</label>
+                    <select asp-for="DoctorId" asp-items="ViewBag.Doctors" class="form-select" id="DoctorId">
                         <option value="">-- Select --</option>
                     </select>
                 </div>
@@ -134,3 +134,38 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+<script>
+(function () {
+    var deptSel   = document.getElementById('DepartmentId');
+    var doctorSel = document.getElementById('DoctorId');
+
+    function loadDoctors(deptId, selectedDoctorId) {
+        doctorSel.innerHTML = '<option value="">-- Select --</option>';
+        if (!deptId) return;
+        fetch('@Url.Action("GetDoctorsByDepartment", "CallCenter")?departmentId=' + deptId)
+            .then(function (r) { return r.json(); })
+            .then(function (doctors) {
+                doctors.forEach(function (d) {
+                    var opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.textContent = d.name;
+                    if (selectedDoctorId && d.id == selectedDoctorId) opt.selected = true;
+                    doctorSel.appendChild(opt);
+                });
+            });
+    }
+
+    // On department change — clear and reload doctors
+    deptSel.addEventListener('change', function () {
+        loadDoctors(this.value, null);
+    });
+
+    // On page load (edit mode) — pre-populate doctors for the saved department
+    var initDept   = deptSel.value;
+    var initDoctor = '@Model.DoctorId';
+    if (initDept) loadDoctors(initDept, initDoctor);
+}());
+</script>
+}

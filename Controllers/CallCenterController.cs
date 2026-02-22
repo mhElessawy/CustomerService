@@ -23,12 +23,27 @@ namespace CustomerServicesSystem.Controllers
             ViewBag.CallPurposes   = SelectList(_db.CallPurposes,   m?.CallPurposeId);
             ViewBag.VisitTypes     = SelectList(_db.VisitTypes,     m?.VisitTypeId);
             ViewBag.OutcomesOfCall = SelectList(_db.OutcomesOfCall, m?.OutcomeOfCallId);
-            ViewBag.Doctors        = SelectList(_db.Doctors,        m?.DoctorId);
             ViewBag.Departments    = SelectList(_db.Departments,    m?.DepartmentId);
+
+            // Doctors filtered by the selected department; empty when no department chosen
+            var doctorsQ = m?.DepartmentId.HasValue == true
+                ? _db.Doctors.Where(x => x.IsActive && x.DepartmentId == m.DepartmentId)
+                : _db.Doctors.Where(x => false);
+            ViewBag.Doctors = new SelectList(doctorsQ.OrderBy(x => x.Name).ToList(), "Id", "Name", m?.DoctorId);
+
             ViewBag.BookedStatuses = SelectList(_db.BookedStatuses, m?.BookedStatusId);
             ViewBag.StaffMembers   = SelectList(_db.StaffMembers,   m?.StaffMemberId);
             ViewBag.Sources        = SelectList(_db.Sources,        m?.SourceId);
         }
+
+        // ── AJAX: doctors for a given department ─────────────────────
+        [HttpGet]
+        public JsonResult GetDoctorsByDepartment(int departmentId) =>
+            Json(_db.Doctors
+                .Where(x => x.DepartmentId == departmentId && x.IsActive)
+                .OrderBy(x => x.Name)
+                .Select(x => new { id = x.Id, name = x.Name })
+                .ToList());
 
         private SelectList SelectList<T>(IQueryable<T> q, int? selected = null) where T : LookupBase =>
             new(q.Where(x => x.IsActive).OrderBy(x => x.Name).ToList(), "Id", "Name", selected);
