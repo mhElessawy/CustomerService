@@ -26,7 +26,7 @@
                 <select name="month" class="form-select form-select-sm">
                     @for (int m = 1; m <= 12; m++)
                     {
-                        <option value="@m" @(m == month ? "selected" : "")>@months[m-1]</option>
+                        <option value="@m" selected="@(m == month)">@months[m-1]</option>
                     }
                 </select>
             </div>
@@ -35,7 +35,7 @@
                 <select name="year" class="form-select form-select-sm">
                     @for (int y = DateTime.Now.Year - 2; y <= DateTime.Now.Year; y++)
                     {
-                        <option value="@y" @(y == year ? "selected" : "")>@y</option>
+                        <option value="@y" selected="@(y == year)">@y</option>
                     }
                 </select>
             </div>

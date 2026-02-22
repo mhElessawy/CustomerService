@@ -3,7 +3,7 @@
     ViewData["Title"] = "Call Center Records";
     var filter = ViewBag.Filter as CustomerServicesSystem.ViewModels.CallCenterFilterVM
                  ?? new CustomerServicesSystem.ViewModels.CallCenterFilterVM();
-    int page       = (int)(ViewBag.Page ?? 1);
+    int pageNum    = (int)(ViewBag.Page ?? 1);
     int totalPages = (int)(ViewBag.TotalPages ?? 1);
     int total      = (int)(ViewBag.TotalRecords ?? 0);
 }
@@ -48,27 +48,30 @@
                 <label class="form-label small mb-1">Call Purpose</label>
                 <select name="CallPurposeId" class="form-select form-select-sm">
                     <option value="">All</option>
-                    @Html.Raw(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-                        ((Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.CallPurposes).Items,
-                        "Value","Text", filter.CallPurposeId?.ToString()).ToHtmlString())
+                    @foreach (var item in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.CallPurposes)
+                    {
+                        <option value="@item.Value" selected="@(item.Value == filter.CallPurposeId?.ToString())">@item.Text</option>
+                    }
                 </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label small mb-1">Staff</label>
                 <select name="StaffMemberId" class="form-select form-select-sm">
                     <option value="">All</option>
-                    @Html.Raw(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-                        ((Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.StaffMembers).Items,
-                        "Value","Text", filter.StaffMemberId?.ToString()).ToHtmlString())
+                    @foreach (var item in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.StaffMembers)
+                    {
+                        <option value="@item.Value" selected="@(item.Value == filter.StaffMemberId?.ToString())">@item.Text</option>
+                    }
                 </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label small mb-1">Booked</label>
                 <select name="BookedStatusId" class="form-select form-select-sm">
                     <option value="">All</option>
-                    @Html.Raw(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-                        ((Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.BookedStatuses).Items,
-                        "Value","Text", filter.BookedStatusId?.ToString()).ToHtmlString())
+                    @foreach (var item in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.BookedStatuses)
+                    {
+                        <option value="@item.Value" selected="@(item.Value == filter.BookedStatusId?.ToString())">@item.Text</option>
+                    }
                 </select>
             </div>
             <div class="col-md-1">
@@ -180,27 +183,27 @@
         @if (totalPages > 1)
         {
             <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
-                <small class="text-muted">Page @page of @totalPages</small>
+                <small class="text-muted">Page @pageNum of @totalPages</small>
                 <nav>
                     <ul class="pagination pagination-sm mb-0">
-                        @if (page > 1)
+                        @if (pageNum > 1)
                         {
                             <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-page="@(page-1)"
+                                <a class="page-link" asp-action="Index" asp-route-page="@(pageNum-1)"
                                    asp-route-patientName="@filter.PatientName">‹</a>
                             </li>
                         }
-                        @for (int p = Math.Max(1, page-2); p <= Math.Min(totalPages, page+2); p++)
+                        @for (int p = Math.Max(1, pageNum-2); p <= Math.Min(totalPages, pageNum+2); p++)
                         {
-                            <li class="page-item @(p == page ? "active" : "")">
+                            <li class="page-item @(p == pageNum ? "active" : "")">
                                 <a class="page-link" asp-action="Index" asp-route-page="@p"
                                    asp-route-patientName="@filter.PatientName">@p</a>
                             </li>
                         }
-                        @if (page < totalPages)
+                        @if (pageNum < totalPages)
                         {
                             <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-page="@(page+1)"
+                                <a class="page-link" asp-action="Index" asp-route-page="@(pageNum+1)"
                                    asp-route-patientName="@filter.PatientName">›</a>
                             </li>
                         }
