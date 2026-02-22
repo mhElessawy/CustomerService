@@ -15,18 +15,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(o =>
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(o =>
 {
-    o.Password.RequireDigit           = false;
-    o.Password.RequiredLength         = 6;
+    o.Password.RequireDigit = false;
+    o.Password.RequiredLength = 6;
     o.Password.RequireNonAlphanumeric = false;
-    o.Password.RequireUppercase       = false;
-    o.SignIn.RequireConfirmedAccount  = false;
+    o.Password.RequireUppercase = false;
+    o.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(o =>
 {
-    o.LoginPath        = "/Account/Login";
+    o.LoginPath = "/Account/Login";
     o.AccessDeniedPath = "/Account/Login";
 });
 
@@ -38,15 +38,24 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var db      = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
+
+    // Add DepartmentId to Doctors if the column doesn't exist yet
+    db.Database.ExecuteSqlRaw(@"
+        IF NOT EXISTS (
+            SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'Doctors' AND COLUMN_NAME = 'DepartmentId'
+        )
+        ALTER TABLE Doctors ADD DepartmentId INT NULL
+    ");
 
     if (await userMgr.FindByEmailAsync("admin@css.com") == null)
     {
         var admin = new ApplicationUser
         {
             UserName = "admin@css.com",
-            Email    = "admin@css.com",
+            Email = "admin@css.com",
             FullName = "System Administrator",
             IsActive = true
         };

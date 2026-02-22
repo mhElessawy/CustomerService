@@ -54,7 +54,9 @@ namespace CustomerServicesSystem.Controllers
             "CallPurposes" => await MapOne(_db.CallPurposes, id),
             "VisitTypes" => await MapOne(_db.VisitTypes, id),
             "OutcomesOfCall" => await MapOne(_db.OutcomesOfCall, id),
-            "Doctors" => await MapOne(_db.Doctors, id),
+            "Doctors" => await _db.Doctors.Where(x => x.Id == id)
+                             .Select(x => new LookupItemVM { Id = x.Id, Name = x.Name, IsActive = x.IsActive, DepartmentId = x.DepartmentId })
+                             .FirstOrDefaultAsync(),
             "Departments" => await MapOne(_db.Departments, id),
             "BookedStatuses" => await MapOne(_db.BookedStatuses, id),
             "StaffMembers" => await MapOne(_db.StaffMembers, id),
@@ -68,14 +70,14 @@ namespace CustomerServicesSystem.Controllers
                    .Select(x => new LookupItemVM { Id = x.Id, Name = x.Name, IsActive = x.IsActive })
                    .FirstOrDefaultAsync();
 
-        private async Task Add(string t, string name, bool active)
+        private async Task Add(string t, string name, bool active, int? departmentId = null)
         {
             switch (t)
             {
                 case "CallPurposes": _db.CallPurposes.Add(new CallPurpose { Name = name, IsActive = active }); break;
                 case "VisitTypes": _db.VisitTypes.Add(new VisitType { Name = name, IsActive = active }); break;
                 case "OutcomesOfCall": _db.OutcomesOfCall.Add(new OutcomeOfCall { Name = name, IsActive = active }); break;
-                case "Doctors": _db.Doctors.Add(new Doctor { Name = name, IsActive = active }); break;
+                case "Doctors": _db.Doctors.Add(new Doctor { Name = name, IsActive = active, DepartmentId = departmentId }); break;
                 case "Departments": _db.Departments.Add(new Department { Name = name, IsActive = active }); break;
                 case "BookedStatuses": _db.BookedStatuses.Add(new BookedStatus { Name = name, IsActive = active }); break;
                 case "StaffMembers": _db.StaffMembers.Add(new StaffMember { Name = name, IsActive = active }); break;
@@ -85,7 +87,7 @@ namespace CustomerServicesSystem.Controllers
             await _db.SaveChangesAsync();
         }
 
-        private async Task Update(string t, int id, string name, bool active)
+        private async Task Update(string t, int id, string name, bool active, int? departmentId = null)
         {
             LookupBase? entity = t switch
             {
@@ -103,6 +105,7 @@ namespace CustomerServicesSystem.Controllers
             if (entity == null) return;
             entity.Name = name;
             entity.IsActive = active;
+            if (entity is Doctor doc) doc.DepartmentId = departmentId;
             await _db.SaveChangesAsync();
         }
 
@@ -135,6 +138,7 @@ namespace CustomerServicesSystem.Controllers
                 LookupType = t,
                 LookupTitle = Meta[t].Title,
                 LookupIcon = Meta[t].Icon,
+                DepartmentId = item?.DepartmentId,
             };
 
         // ── Actions ───────────────────────────────────────────────────
@@ -155,6 +159,9 @@ namespace CustomerServicesSystem.Controllers
             if (!Valid(type)) return NotFound();
             LookupItemVM? item = id.HasValue ? await GetById(type, id.Value) : null;
             if (id.HasValue && item == null) return NotFound();
+            if (type == "Doctors")
+                ViewBag.Departments = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+                    _db.Departments.Where(x => x.IsActive).OrderBy(x => x.Name).ToList(), "Id", "Name");
             return View(BuildForm(type, item));
         }
 
@@ -166,10 +173,13 @@ namespace CustomerServicesSystem.Controllers
             {
                 vm.LookupTitle = Meta[vm.LookupType].Title;
                 vm.LookupIcon = Meta[vm.LookupType].Icon;
+                if (vm.LookupType == "Doctors")
+                    ViewBag.Departments = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+                        _db.Departments.Where(x => x.IsActive).OrderBy(x => x.Name).ToList(), "Id", "Name");
                 return View(vm);
             }
-            if (vm.Id == 0) await Add(vm.LookupType, vm.Name.Trim(), vm.IsActive);
-            else await Update(vm.LookupType, vm.Id, vm.Name.Trim(), vm.IsActive);
+            if (vm.Id == 0) await Add(vm.LookupType, vm.Name.Trim(), vm.IsActive, vm.DepartmentId);
+            else await Update(vm.LookupType, vm.Id, vm.Name.Trim(), vm.IsActive, vm.DepartmentId);
 
             TempData["Success"] = vm.Id == 0
                 ? $"'{vm.Name}' added successfully."

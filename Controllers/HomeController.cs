@@ -14,17 +14,17 @@ namespace CustomerServicesSystem.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var today     = DateTime.Today;
-            var monthStart= new DateTime(today.Year, today.Month, 1);
-            var week      = today.AddDays(-6);
+            var today = DateTime.Today;
+            var monthStart = new DateTime(today.Year, today.Month, 1);
+            var week = today.AddDays(-6);
 
             var vm = new DashboardVM
             {
-                TotalRecords   = await _db.CallCenterRecords.CountAsync(),
-                TodayRecords   = await _db.CallCenterRecords.CountAsync(x => x.RecordDate.Date == today),
-                BookedCount    = await _db.CallCenterRecords.CountAsync(x => x.BookedStatus != null && x.BookedStatus.Name == "Yes"),
-                TotalDoctors   = await _db.Doctors.CountAsync(x => x.IsActive),
-                TotalStaff     = await _db.StaffMembers.CountAsync(x => x.IsActive),
+                TotalRecords = await _db.CallCenterRecords.CountAsync(),
+                TodayRecords = await _db.CallCenterRecords.CountAsync(x => x.RecordDate.Date == today),
+                BookedCount = await _db.CallCenterRecords.CountAsync(x => x.BookedStatus != null && x.BookedStatus.Name == "Yes"),
+                TotalDoctors = await _db.Doctors.CountAsync(x => x.IsActive),
+                TotalStaff = await _db.StaffMembers.CountAsync(x => x.IsActive),
                 ThisMonthCount = await _db.CallCenterRecords.CountAsync(x => x.RecordDate >= monthStart),
 
                 ByCallPurpose = await _db.CallCenterRecords
@@ -51,11 +51,14 @@ namespace CustomerServicesSystem.Controllers
                     .Select(g => new ChartItem { Label = g.Key, Value = g.Count() })
                     .OrderByDescending(x => x.Value).Take(6).ToListAsync(),
 
-                Last7Days = await _db.CallCenterRecords
+                Last7Days = (await _db.CallCenterRecords
                     .Where(x => x.RecordDate >= week)
                     .GroupBy(x => x.RecordDate.Date)
-                    .Select(g => new ChartItem { Label = g.Key.ToString("MM/dd"), Value = g.Count() })
-                    .OrderBy(x => x.Label).ToListAsync()
+                    .Select(g => new { Date = g.Key, Value = g.Count() })
+                    .OrderBy(x => x.Date)
+                    .ToListAsync())
+                    .Select(x => new ChartItem { Label = x.Date.ToString("MM/dd"), Value = x.Value })
+                    .ToList()
             };
 
             return View(vm);

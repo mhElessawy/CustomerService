@@ -8,70 +8,150 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
     <style>
         :root {
-            --sidebar-bg:     #0f172a;
+            --sidebar-bg: #0f172a;
             --sidebar-accent: #3b82f6;
-            --sidebar-width:  240px;
-            --topbar-h:       56px;
+            --sidebar-width: 240px;
+            --topbar-h: 56px;
         }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f1f5f9; color: #1e293b; }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
 
         /* ── Sidebar ── */
         .sidebar {
-            position: fixed; top: 0; left: 0; bottom: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
             width: var(--sidebar-width);
             background: var(--sidebar-bg);
-            display: flex; flex-direction: column;
-            z-index: 1000; overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
         }
+
         .sidebar-brand {
             padding: 18px 20px 14px;
             border-bottom: 1px solid rgba(255,255,255,.08);
         }
-        .sidebar-brand .brand-name { font-size: 15px; font-weight: 700; color: #fff; }
-        .sidebar-brand .brand-sub  { font-size: 11px; color: #64748b; }
-        .sidebar-brand .brand-icon {
-            width: 36px; height: 36px; background: var(--sidebar-accent);
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 16px; margin-bottom: 8px;
-        }
+
+            .sidebar-brand .brand-name {
+                font-size: 15px;
+                font-weight: 700;
+                color: #fff;
+            }
+
+            .sidebar-brand .brand-sub {
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            .sidebar-brand .brand-icon {
+                width: 36px;
+                height: 36px;
+                background: var(--sidebar-accent);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+
         .nav-section-label {
-            font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase;
-            color: #475569; padding: 14px 20px 4px; font-weight: 600;
+            font-size: 10px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #475569;
+            padding: 14px 20px 4px;
+            font-weight: 600;
         }
+
         .sidebar .nav-link {
-            color: #94a3b8; padding: 9px 20px; border-radius: 0;
-            font-size: 13.5px; display: flex; align-items: center; gap: 10px;
-            transition: all .15s; position: relative;
+            color: #94a3b8;
+            padding: 9px 20px;
+            border-radius: 0;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all .15s;
+            position: relative;
         }
-        .sidebar .nav-link i { width: 16px; text-align: center; font-size: 13px; }
-        .sidebar .nav-link:hover { color: #e2e8f0; background: rgba(255,255,255,.05); }
-        .sidebar .nav-link.active {
-            color: #fff; background: rgba(59,130,246,.18);
-            border-left: 3px solid var(--sidebar-accent);
-        }
-        .sidebar .nav-link.active i { color: var(--sidebar-accent); }
+
+            .sidebar .nav-link i {
+                width: 16px;
+                text-align: center;
+                font-size: 13px;
+            }
+
+            .sidebar .nav-link:hover {
+                color: #e2e8f0;
+                background: rgba(255,255,255,.05);
+            }
+
+            .sidebar .nav-link.active {
+                color: #fff;
+                background: rgba(59,130,246,.18);
+                border-left: 3px solid var(--sidebar-accent);
+            }
+
+                .sidebar .nav-link.active i {
+                    color: var(--sidebar-accent);
+                }
 
         /* ── Topbar ── */
         .topbar {
-            position: fixed; top: 0; left: var(--sidebar-width); right: 0;
-            height: var(--topbar-h); background: #fff;
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--topbar-h);
+            background: #fff;
             border-bottom: 1px solid #e2e8f0;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 24px; z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 900;
             box-shadow: 0 1px 3px rgba(0,0,0,.06);
         }
-        .topbar-title { font-weight: 600; font-size: 16px; }
+
+        .topbar-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
         .user-badge {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 13px; color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #475569;
         }
-        .user-badge .avatar {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: var(--sidebar-accent); color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 13px;
-        }
+
+            .user-badge .avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: var(--sidebar-accent);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 13px;
+            }
 
         /* ── Page wrapper ── */
         .page-wrapper {
@@ -79,161 +159,278 @@
             padding-top: var(--topbar-h);
             min-height: 100vh;
         }
-        .page-content { padding: 24px; }
+
+        .page-content {
+            padding: 24px;
+        }
 
         /* ── Cards ── */
         .card {
-            border: none; border-radius: 12px;
+            border: none;
+            border-radius: 12px;
             box-shadow: 0 1px 4px rgba(0,0,0,.08);
         }
+
         .card-header-blue {
             background: linear-gradient(135deg, #1a237e, #1976d2);
-            color: #fff; border-radius: 12px 12px 0 0 !important;
+            color: #fff;
+            border-radius: 12px 12px 0 0 !important;
             padding: 14px 20px;
         }
+
         .stat-card {
-            border-radius: 12px; padding: 20px; color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            color: #fff;
             box-shadow: 0 4px 12px rgba(0,0,0,.12);
         }
-        .stat-card .stat-icon { font-size: 36px; opacity: .25; }
-        .stat-card .stat-value { font-size: 32px; font-weight: 700; }
-        .stat-card .stat-label { font-size: 13px; opacity: .85; }
+
+            .stat-card .stat-icon {
+                font-size: 36px;
+                opacity: .25;
+            }
+
+            .stat-card .stat-value {
+                font-size: 32px;
+                font-weight: 700;
+            }
+
+            .stat-card .stat-label {
+                font-size: 13px;
+                opacity: .85;
+            }
 
         /* ── Table ── */
         .table thead th {
-            background: #1a237e; color: #fff;
-            font-weight: 500; font-size: 13px;
-            border: none; white-space: nowrap;
+            background: #1a237e;
+            color: #fff;
+            font-weight: 500;
+            font-size: 13px;
+            border: none;
+            white-space: nowrap;
         }
-        .table td { font-size: 13px; vertical-align: middle; }
-        .table-hover tbody tr:hover { background: #f0f7ff; }
+
+        .table td {
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .table-hover tbody tr:hover {
+            background: #f0f7ff;
+        }
 
         /* ── Badges ── */
-        .badge-booked-yes { background:#dcfce7; color:#15803d; }
-        .badge-booked-no  { background:#fee2e2; color:#b91c1c; }
-        .badge-booked-pnd { background:#fef9c3; color:#92400e; }
+        .badge-booked-yes {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-booked-no {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-booked-pnd {
+            background: #fef9c3;
+            color: #92400e;
+        }
 
         /* ── Misc ── */
-        .btn { border-radius: 8px; }
-        .form-control, .form-select { border-radius: 8px; font-size: 14px; }
-        .alert { border-radius: 10px; }
+        .btn {
+            border-radius: 8px;
+        }
 
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .page-wrapper { margin-left: 0; }
-            .topbar { left: 0; }
+        .form-control, .form-select {
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .alert {
+            border-radius: 10px;
+        }
+
+        @@media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform .25s ease;
+            }
+
+                .sidebar.sidebar-open {
+                    transform: translateX(0);
+                }
+
+            .page-wrapper {
+                margin-left: 0;
+            }
+
+            .topbar {
+                left: 0;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,.45);
+                z-index: 999;
+            }
+
+                .sidebar-overlay.active {
+                    display: block;
+                }
+
+            .btn-hamburger {
+                display: flex !important;
+            }
+        }
+
+        .btn-hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px 8px;
+            color: #1e293b;
+            font-size: 20px;
+            align-items: center;
         }
     </style>
 </head>
 <body>
 
-<!-- ══ SIDEBAR ══════════════════════════════════════════════════════ -->
-<aside class="sidebar">
-    <div class="sidebar-brand">
-        <div class="brand-icon"><i class="fas fa-headset"></i></div>
-        <div class="brand-name">Customer Services</div>
-        <div class="brand-sub">Call Center System</div>
-    </div>
+    <!-- ══ SIDEBAR ══════════════════════════════════════════════════════ -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><i class="fas fa-headset"></i></div>
+            <div class="brand-name">Customer Services</div>
+            <div class="brand-sub">Call Center System</div>
+        </div>
 
-    <nav class="mt-1 flex-grow-1">
-        <ul class="nav flex-column">
-            @{
-                var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
-                var qtype = ViewContext.HttpContext.Request.Query["type"].ToString();
-            }
+        <nav class="mt-1 flex-grow-1">
+            <ul class="nav flex-column">
+                @{
+                    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+                    var qtype = ViewContext.HttpContext.Request.Query["type"].ToString();
+                }
 
-            <div class="nav-section-label">Main</div>
+                <div class="nav-section-label">Main</div>
 
-            <li class="nav-item">
-                <a class="nav-link @(ctrl == "Home" ? "active" : "")"
-                   asp-controller="Home" asp-action="Index">
-                    <i class="fas fa-gauge-high"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link @(ctrl == "CallCenter" ? "active" : "")"
-                   asp-controller="CallCenter" asp-action="Index">
-                    <i class="fas fa-phone-volume"></i> Call Center Records
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link @(ctrl == "Reports" ? "active" : "")"
-                   asp-controller="Reports" asp-action="Summary">
-                    <i class="fas fa-chart-bar"></i> Reports
-                </a>
-            </li>
-
-            <div class="nav-section-label">Definitions</div>
-
-            @{
-                var lookups = new (string Type, string Title, string Icon)[]
-                {
-                    ("CallPurposes",   "Call Purpose",    "fas fa-bullseye"),
-                    ("VisitTypes",     "Visit Type",      "fas fa-hospital-user"),
-                    ("OutcomesOfCall", "Outcome of Call", "fas fa-check-circle"),
-                    ("Doctors",        "Doctor Name",     "fas fa-user-md"),
-                    ("Departments",    "Department",      "fas fa-building"),
-                    ("BookedStatuses", "Booked Status",   "fas fa-calendar-check"),
-                    ("StaffMembers",   "Staff Name",      "fas fa-users"),
-                    ("Sources",        "Source",          "fas fa-share-alt"),
-                    ("Nationalities",  "Nationality",     "fas fa-flag"),
-                };
-            }
-            @foreach (var lk in lookups)
-            {
-                bool isLkActive = ctrl == "Lookups" && qtype == lk.Type;
                 <li class="nav-item">
-                    <a class="nav-link @(isLkActive ? "active" : "")"
-                       asp-controller="Lookups" asp-action="Index" asp-route-type="@lk.Type">
-                        <i class="@lk.Icon"></i> @lk.Title
+                    <a class="nav-link @(ctrl == "Home" ? "active" : "")"
+                       asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-gauge-high"></i> Dashboard
                     </a>
                 </li>
-            }
-        </ul>
-    </nav>
+                <li class="nav-item">
+                    <a class="nav-link @(ctrl == "CallCenter" ? "active" : "")"
+                       asp-controller="CallCenter" asp-action="Index">
+                        <i class="fas fa-phone-volume"></i> Call Center Records
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ctrl == "Reports" ? "active" : "")"
+                       asp-controller="Reports" asp-action="Summary">
+                        <i class="fas fa-chart-bar"></i> Reports
+                    </a>
+                </li>
 
-    <div class="p-3 border-top border-white border-opacity-10">
-        <form asp-controller="Account" asp-action="Logout" method="post">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-sm btn-outline-secondary w-100 text-white border-white border-opacity-25">
-                <i class="fas fa-right-from-bracket me-1"></i> Logout
+                <div class="nav-section-label">Definitions</div>
+
+                @{
+                    var lookups = new (string Type, string Title, string Icon)[]
+                    {
+                                ("CallPurposes",   "Call Purpose",    "fas fa-bullseye"),
+                                ("VisitTypes",     "Visit Type",      "fas fa-hospital-user"),
+                                ("OutcomesOfCall", "Outcome of Call", "fas fa-check-circle"),
+                                ("Doctors",        "Doctor Name",     "fas fa-user-md"),
+                                ("Departments",    "Department",      "fas fa-building"),
+                                ("BookedStatuses", "Booked Status",   "fas fa-calendar-check"),
+                                ("StaffMembers",   "Staff Name",      "fas fa-users"),
+                                ("Sources",        "Source",          "fas fa-share-alt"),
+                                ("Nationalities",  "Nationality",     "fas fa-flag"),
+                    };
+                }
+                @foreach (var lk in lookups)
+                {
+                    bool isLkActive = ctrl == "Lookups" && qtype == lk.Type;
+                    <li class="nav-item">
+                        <a class="nav-link @(isLkActive ? "active" : "")"
+                           asp-controller="Lookups" asp-action="Index" asp-route-type="@lk.Type">
+                            <i class="@lk.Icon"></i> @lk.Title
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+
+        <div class="p-3 border-top border-white border-opacity-10">
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-outline-secondary w-100 text-white border-white border-opacity-25">
+                    <i class="fas fa-right-from-bracket me-1"></i> Logout
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- ══ OVERLAY (mobile) ══════════════════════════════════════════════ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ══ TOPBAR ════════════════════════════════════════════════════════ -->
+    <div class="topbar">
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn-hamburger" id="btnHamburger" aria-label="Open menu">
+                <i class="fas fa-bars"></i>
             </button>
-        </form>
+            <span class="topbar-title">@(ViewData["Title"] ?? "Customer Services System")</span>
+        </div>
+        <div class="user-badge">
+            <div class="avatar">@(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "A")</div>
+            <span class="d-none d-sm-inline">@User.Identity?.Name</span>
+        </div>
     </div>
-</aside>
 
-<!-- ══ TOPBAR ════════════════════════════════════════════════════════ -->
-<div class="topbar">
-    <span class="topbar-title">@(ViewData["Title"] ?? "Customer Services System")</span>
-    <div class="user-badge">
-        <div class="avatar">@(User.Identity?.Name?.Substring(0,1).ToUpper() ?? "A")</div>
-        <span>@User.Identity?.Name</span>
+    <!-- ══ PAGE ══════════════════════════════════════════════════════════ -->
+    <div class="page-wrapper">
+        <div class="page-content">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show mb-3">
+                    <i class="fas fa-circle-check me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show mb-3">
+                    <i class="fas fa-circle-exclamation me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @RenderBody()
+        </div>
     </div>
-</div>
 
-<!-- ══ PAGE ══════════════════════════════════════════════════════════ -->
-<div class="page-wrapper">
-    <div class="page-content">
-        @if (TempData["Success"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show mb-3">
-                <i class="fas fa-circle-check me-2"></i>@TempData["Success"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show mb-3">
-                <i class="fas fa-circle-exclamation me-2"></i>@TempData["Error"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-        @RenderBody()
-    </div>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        (function () {
+            var sidebar  = document.querySelector('.sidebar');
+            var overlay  = document.getElementById('sidebarOverlay');
+            var hamburger= document.getElementById('btnHamburger');
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-@await RenderSectionAsync("Scripts", required: false)
+            function openSidebar()  { sidebar.classList.add('sidebar-open');    overlay.classList.add('active'); }
+            function closeSidebar() { sidebar.classList.remove('sidebar-open'); overlay.classList.remove('active'); }
+
+            hamburger.addEventListener('click', openSidebar);
+            overlay.addEventListener('click', closeSidebar);
+
+            // Close sidebar when any nav link is clicked (mobile navigation)
+            sidebar.querySelectorAll('.nav-link').forEach(function (link) {
+                link.addEventListener('click', closeSidebar);
+            });
+        }());
+    </script>
 </body>
 </html>
