@@ -1,4 +1,4 @@
-namespace CustomerService.Models
+namespace CustomerServicesSystem.Models
 {
     public class ErrorViewModel
     {
