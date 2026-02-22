@@ -51,11 +51,14 @@ namespace CustomerServicesSystem.Controllers
                     .Select(g => new ChartItem { Label = g.Key, Value = g.Count() })
                     .OrderByDescending(x => x.Value).Take(6).ToListAsync(),
 
-                Last7Days = await _db.CallCenterRecords
+                Last7Days = (await _db.CallCenterRecords
                     .Where(x => x.RecordDate >= week)
                     .GroupBy(x => x.RecordDate.Date)
-                    .Select(g => new ChartItem { Label = g.Key.ToString("MM/dd"), Value = g.Count() })
-                    .OrderBy(x => x.Label).ToListAsync()
+                    .Select(g => new { Date = g.Key, Value = g.Count() })
+                    .OrderBy(x => x.Date)
+                    .ToListAsync())
+                    .Select(x => new ChartItem { Label = x.Date.ToString("MM/dd"), Value = x.Value })
+                    .ToList()
             };
 
             return View(vm);
