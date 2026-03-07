@@ -48,8 +48,9 @@
                     <input asp-for="FileNo" class="form-control" placeholder="File number" />
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">Contact No.</label>
-                    <input asp-for="ContactNo" class="form-control" placeholder="Phone number" />
+                    <label class="form-label fw-semibold">Contact No. <span class="text-danger">*</span></label>
+                    <input asp-for="ContactNo" class="form-control" placeholder="Phone number" id="ContactNo" />
+                    <span asp-validation-for="ContactNo" class="text-danger small"></span>
                 </div>
             </div>
 
@@ -84,7 +85,7 @@
                 </div>
             </div>
 
-            <!-- Row 3: Dropdowns 2 � Department first, then Doctor (filtered by department) -->
+            <!-- Row 3: Dropdowns 2 � Department first, then Doctor (filtered by department) -->
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Department</label>
@@ -124,6 +125,18 @@
                 <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
             </div>
 
+            <!-- Existing record alert -->
+            <div id="existingRecordAlert" class="alert alert-warning alert-dismissible fade show d-none mb-3" role="alert">
+                <strong><i class="fas fa-exclamation-triangle me-1"></i> Existing Record Found!</strong>
+                <div id="existingRecordInfo" class="mt-1 small"></div>
+                <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-warning me-1" onclick="fillFromExisting()">
+                        <i class="fas fa-fill me-1"></i> Fill Patient Data
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="alert">Ignore</button>
+                </div>
+            </div>
+
             <hr class="my-3" />
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary px-4">
@@ -157,15 +170,72 @@
                     });
             }
 
-            // On department change � clear and reload doctors
+            // On department change� clear and reload doctors
             deptSel.addEventListener('change', function () {
                 loadDoctors(this.value, null);
             });
 
-            // On page load (edit mode) � pre-populate doctors for the saved department
+            // On page load (edit mode) � pre-populate doctors for the saved department
             var initDept   = deptSel.value;
             var initDoctor = '@Model.DoctorId';
             if (initDept) loadDoctors(initDept, initDoctor);
+
+            // ── Check existing record by ContactNo or FileNo ──────────
+            var currentId = @Model.Id;
+            var existingData = null;
+
+            function checkExisting(contactNo, fileNo) {
+                var url = '@Url.Action("CheckExistingRecord", "CallCenter")' +
+                    '?currentId=' + currentId +
+                    (contactNo ? '&contactNo=' + encodeURIComponent(contactNo) : '') +
+                    (fileNo    ? '&fileNo='    + encodeURIComponent(fileNo)    : '');
+
+                fetch(url)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.exists) {
+                            existingData = data;
+                            var info = '<b>Patient:</b> ' + (data.patientName || '-') +
+                                       ' &nbsp;|&nbsp; <b>Gender:</b> ' + (data.gender || '-') +
+                                       ' &nbsp;|&nbsp; <b>File No:</b> ' + (data.fileNo || '-') +
+                                       ' &nbsp;|&nbsp; <b>Contact:</b> ' + (data.contactNo || '-');
+                            document.getElementById('existingRecordInfo').innerHTML = info;
+                            document.getElementById('existingRecordAlert').classList.remove('d-none');
+                        } else {
+                            existingData = null;
+                            document.getElementById('existingRecordAlert').classList.add('d-none');
+                        }
+                    });
+            }
+
+            var contactInput = document.getElementById('ContactNo');
+            var fileInput    = document.getElementById('FileNo');
+
+            if (contactInput) {
+                contactInput.addEventListener('blur', function() {
+                    if (this.value.trim()) checkExisting(this.value.trim(), null);
+                    else document.getElementById('existingRecordAlert').classList.add('d-none');
+                });
+            }
+            if (fileInput) {
+                fileInput.addEventListener('blur', function() {
+                    if (this.value.trim() && !(contactInput && contactInput.value.trim()))
+                        checkExisting(null, this.value.trim());
+                });
+            }
+
+            window.fillFromExisting = function() {
+                if (!existingData) return;
+                var pn = document.getElementById('PatientName');
+                var g  = document.getElementById('Gender');
+                var fn = document.getElementById('FileNo');
+                var na = document.getElementById('NationalityId');
+                if (pn && existingData.patientName) pn.value = existingData.patientName;
+                if (g  && existingData.gender)      g.value  = existingData.gender;
+                if (fn && existingData.fileNo)      fn.value = existingData.fileNo;
+                if (na && existingData.nationalityId) na.value = existingData.nationalityId;
+                document.getElementById('existingRecordAlert').classList.add('d-none');
+            };
         }());
     </script>
 }

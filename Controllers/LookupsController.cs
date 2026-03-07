@@ -129,6 +129,24 @@ namespace CustomerServicesSystem.Controllers
             await _db.SaveChangesAsync();
         }
 
+        private async Task<bool> NameExistsAsync(string t, string name, int excludeId = 0)
+        {
+            var n = name.Trim().ToLower();
+            return t switch
+            {
+                "CallPurposes"   => await _db.CallPurposes.AnyAsync(x => x.Name.ToLower() == n && x.Id != excludeId),
+                "VisitTypes"     => await _db.VisitTypes.AnyAsync(x => x.Name.ToLower() == n && x.Id != excludeId),
+                "OutcomesOfCall" => await _db.OutcomesOfCall.AnyAsync(x => x.Name.ToLower() == n && x.Id != excludeId),
+                "Doctors"        => await _db.Doctors.AnyAsync(x => x.Name.ToLower() == n && x.Id != excludeId),
+                "Departments"    => await _db.Departments.AnyAsync(x => x.Name.ToLower() == n && x.Id != excludeId),
+                "BookedStatuses" => await _db.BookedStatuses.AnyAsync(x => x.Name.ToLower() == n && x.Id != excludeId),
+                "StaffMembers"   => await _db.StaffMembers.AnyAsync(x => x.Name.ToLower() == n && x.Id != excludeId),
+                "Sources"        => await _db.Sources.AnyAsync(x => x.Name.ToLower() == n && x.Id != excludeId),
+                "Nationalities"  => await _db.Nationalities.AnyAsync(x => x.Name.ToLower() == n && x.Id != excludeId),
+                _                => false
+            };
+        }
+
         private LookupFormVM BuildForm(string t, LookupItemVM? item = null) =>
             new()
             {
@@ -178,6 +196,19 @@ namespace CustomerServicesSystem.Controllers
                         _db.Departments.Where(x => x.IsActive).OrderBy(x => x.Name).ToList(), "Id", "Name");
                 return View(vm);
             }
+
+            // Check for duplicate name
+            if (await NameExistsAsync(vm.LookupType, vm.Name, vm.Id))
+            {
+                vm.LookupTitle = Meta[vm.LookupType].Title;
+                vm.LookupIcon = Meta[vm.LookupType].Icon;
+                if (vm.LookupType == "Doctors")
+                    ViewBag.Departments = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+                        _db.Departments.Where(x => x.IsActive).OrderBy(x => x.Name).ToList(), "Id", "Name");
+                ModelState.AddModelError(nameof(vm.Name), $"'{vm.Name}' already exists in {vm.LookupTitle}.");
+                return View(vm);
+            }
+
             if (vm.Id == 0) await Add(vm.LookupType, vm.Name.Trim(), vm.IsActive, vm.DepartmentId);
             else await Update(vm.LookupType, vm.Id, vm.Name.Trim(), vm.IsActive, vm.DepartmentId);
 

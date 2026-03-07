@@ -48,6 +48,7 @@ namespace CustomerServicesSystem.ViewModels
         public string? PatientName { get; set; }
         public string? Gender { get; set; }
         public string? FileNo { get; set; }
+        [Required(ErrorMessage = "Contact No. is required")]
         public string? ContactNo { get; set; }
         public int? NationalityId { get; set; }
         public int? CallPurposeId { get; set; }
@@ -70,6 +71,8 @@ namespace CustomerServicesSystem.ViewModels
         public int? DepartmentId { get; set; }
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
+        public string? SortBy { get; set; }
+        public string? SortDir { get; set; }
     }
 
     // ─── Dashboard ────────────────────────────
