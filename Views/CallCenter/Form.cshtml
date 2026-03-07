@@ -126,14 +126,14 @@
             </div>
 
             <!-- Existing record alert -->
-            <div id="existingRecordAlert" class="alert alert-warning alert-dismissible fade show d-none mb-3" role="alert">
-                <strong><i class="fas fa-exclamation-triangle me-1"></i> Existing Record Found!</strong>
+            <div id="existingRecordAlert" class="alert alert-danger alert-dismissible fade show d-none mb-3" role="alert">
+                <strong><i class="fas fa-ban me-1"></i> رقم الهاتف مسجل مسبقاً!</strong>
                 <div id="existingRecordInfo" class="mt-1 small"></div>
                 <div class="mt-2">
-                    <button type="button" class="btn btn-sm btn-warning me-1" onclick="fillFromExisting()">
-                        <i class="fas fa-fill me-1"></i> Fill Patient Data
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="alert">Ignore</button>
+                    <a id="editExistingLink" href="#" class="btn btn-sm btn-primary me-1">
+                        <i class="fas fa-edit me-1"></i> تعديل السجل الموجود
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnDismissExisting">تجاهل</button>
                 </div>
             </div>
 
@@ -180,62 +180,66 @@
             var initDoctor = '@Model.DoctorId';
             if (initDept) loadDoctors(initDept, initDoctor);
 
-            // ── Check existing record by ContactNo or FileNo ──────────
+            // ── Check existing record by ContactNo ────────────────────
             var currentId = @Model.Id;
             var existingData = null;
+            var contactDuplicate = false;
+            var alert = document.getElementById('existingRecordAlert');
+            var saveBtn = document.querySelector('button[type="submit"]');
 
-            function checkExisting(contactNo, fileNo) {
+            function showDuplicateAlert(data) {
+                existingData = data;
+                contactDuplicate = true;
+                var editUrl = '@Url.Action("Edit", "CallCenter")/' + data.id;
+                document.getElementById('editExistingLink').href = editUrl;
+                var info = '<b>اسم المريض:</b> ' + (data.patientName || '-') +
+                           ' &nbsp;|&nbsp; <b>الجنس:</b> ' + (data.gender || '-') +
+                           ' &nbsp;|&nbsp; <b>رقم الملف:</b> ' + (data.fileNo || '-') +
+                           ' &nbsp;|&nbsp; <b>رقم الهاتف:</b> ' + (data.contactNo || '-');
+                document.getElementById('existingRecordInfo').innerHTML = info;
+                alert.classList.remove('d-none');
+                saveBtn.disabled = true;
+            }
+
+            function hideDuplicateAlert() {
+                existingData = null;
+                contactDuplicate = false;
+                alert.classList.add('d-none');
+                saveBtn.disabled = false;
+            }
+
+            document.getElementById('btnDismissExisting').addEventListener('click', hideDuplicateAlert);
+
+            function checkExisting(contactNo) {
                 var url = '@Url.Action("CheckExistingRecord", "CallCenter")' +
-                    '?currentId=' + currentId +
-                    (contactNo ? '&contactNo=' + encodeURIComponent(contactNo) : '') +
-                    (fileNo    ? '&fileNo='    + encodeURIComponent(fileNo)    : '');
-
+                    '?currentId=' + currentId + '&contactNo=' + encodeURIComponent(contactNo);
                 fetch(url)
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
-                        if (data.exists) {
-                            existingData = data;
-                            var info = '<b>Patient:</b> ' + (data.patientName || '-') +
-                                       ' &nbsp;|&nbsp; <b>Gender:</b> ' + (data.gender || '-') +
-                                       ' &nbsp;|&nbsp; <b>File No:</b> ' + (data.fileNo || '-') +
-                                       ' &nbsp;|&nbsp; <b>Contact:</b> ' + (data.contactNo || '-');
-                            document.getElementById('existingRecordInfo').innerHTML = info;
-                            document.getElementById('existingRecordAlert').classList.remove('d-none');
-                        } else {
-                            existingData = null;
-                            document.getElementById('existingRecordAlert').classList.add('d-none');
-                        }
+                        if (data.exists) showDuplicateAlert(data);
+                        else hideDuplicateAlert();
                     });
             }
 
             var contactInput = document.getElementById('ContactNo');
-            var fileInput    = document.getElementById('FileNo');
-
             if (contactInput) {
                 contactInput.addEventListener('blur', function() {
-                    if (this.value.trim()) checkExisting(this.value.trim(), null);
-                    else document.getElementById('existingRecordAlert').classList.add('d-none');
+                    if (this.value.trim()) checkExisting(this.value.trim());
+                    else hideDuplicateAlert();
                 });
-            }
-            if (fileInput) {
-                fileInput.addEventListener('blur', function() {
-                    if (this.value.trim() && !(contactInput && contactInput.value.trim()))
-                        checkExisting(null, this.value.trim());
+                contactInput.addEventListener('input', function() {
+                    if (contactDuplicate) hideDuplicateAlert();
                 });
             }
 
-            window.fillFromExisting = function() {
-                if (!existingData) return;
-                var pn = document.getElementById('PatientName');
-                var g  = document.getElementById('Gender');
-                var fn = document.getElementById('FileNo');
-                var na = document.getElementById('NationalityId');
-                if (pn && existingData.patientName) pn.value = existingData.patientName;
-                if (g  && existingData.gender)      g.value  = existingData.gender;
-                if (fn && existingData.fileNo)      fn.value = existingData.fileNo;
-                if (na && existingData.nationalityId) na.value = existingData.nationalityId;
-                document.getElementById('existingRecordAlert').classList.add('d-none');
-            };
+            // Prevent form submit if duplicate
+            document.querySelector('form').addEventListener('submit', function(e) {
+                if (contactDuplicate) {
+                    e.preventDefault();
+                    alert.classList.remove('d-none');
+                    alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
         }());
     </script>
 }

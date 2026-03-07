@@ -194,6 +194,20 @@ namespace CustomerServicesSystem.Controllers
         {
             if (!ModelState.IsValid) { LoadDropdowns(vm); return View("Form", vm); }
 
+            // منع تكرار رقم الهاتف
+            if (!string.IsNullOrWhiteSpace(vm.ContactNo))
+            {
+                var contactTrimmed = vm.ContactNo.Trim();
+                var duplicate = await _db.CallCenterRecords
+                    .AnyAsync(x => x.ContactNo == contactTrimmed && x.Id != vm.Id);
+                if (duplicate)
+                {
+                    ModelState.AddModelError(nameof(vm.ContactNo), "رقم الهاتف هذا مسجل مسبقاً. لا يمكن تكرار نفس الرقم.");
+                    LoadDropdowns(vm);
+                    return View("Form", vm);
+                }
+            }
+
             if (vm.Id == 0)
             {
                 var r = new CallCenterRecord
