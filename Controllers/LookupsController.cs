@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CustomerServicesSystem.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class LookupsController : Controller
     {
         private readonly ApplicationDbContext _db;

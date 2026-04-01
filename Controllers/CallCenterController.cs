@@ -252,7 +252,7 @@ namespace CustomerServicesSystem.Controllers
         }
 
         // ── DELETE ────────────────────────────────────────────────────
-        [HttpPost, ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles = "Admin,Supervisor")]
         public async Task<IActionResult> Delete(int id)
         {
             var r = await _db.CallCenterRecords.FindAsync(id);
@@ -262,6 +262,7 @@ namespace CustomerServicesSystem.Controllers
         }
 
         // ── EXPORT EXCEL ──────────────────────────────────────────────
+        [Authorize(Roles = "Admin,Supervisor")]
         public async Task<IActionResult> ExportExcel(CallCenterFilterVM filter)
         {
             var q = BaseQuery().AsQueryable();
@@ -330,9 +331,10 @@ namespace CustomerServicesSystem.Controllers
         }
 
         // ── IMPORT EXCEL ──────────────────────────────────────────────
+        [Authorize(Roles = "Admin,Supervisor")]
         public IActionResult Import() => View();
 
-        [HttpPost, ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles = "Admin,Supervisor")]
         public async Task<IActionResult> Import(IFormFile file)
         {
             if (file == null || file.Length == 0)

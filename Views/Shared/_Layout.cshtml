@@ -311,6 +311,11 @@
                 @{
                     var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
                     var qtype = ViewContext.HttpContext.Request.Query["type"].ToString();
+                    bool isAdmin = User.IsInRole("Admin");
+                    bool isSupervisor = User.IsInRole("Supervisor");
+                    bool canViewReports = isAdmin || isSupervisor;
+                    bool canManageLookups = isAdmin;
+                    bool canManageUsers = isAdmin;
                 }
 
                 <div class="nav-section-label">Main</div>
@@ -327,36 +332,52 @@
                         <i class="fas fa-phone-volume"></i> Call Center Records
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ctrl == "Reports" ? "active" : "")"
-                       asp-controller="Reports" asp-action="Summary">
-                        <i class="fas fa-chart-bar"></i> Reports
-                    </a>
-                </li>
-
-                <div class="nav-section-label">Definitions</div>
-
-                @{
-                    var lookups = new (string Type, string Title, string Icon)[]
-                    {
-                                ("CallPurposes",   "Call Purpose",    "fas fa-bullseye"),
-                                ("VisitTypes",     "Visit Type",      "fas fa-hospital-user"),
-                                ("OutcomesOfCall", "Outcome of Call", "fas fa-check-circle"),
-                                ("Doctors",        "Doctor Name",     "fas fa-user-md"),
-                                ("Departments",    "Department",      "fas fa-building"),
-                                ("BookedStatuses", "Booked Status",   "fas fa-calendar-check"),
-                                ("StaffMembers",   "Staff Name",      "fas fa-users"),
-                                ("Sources",        "Source",          "fas fa-share-alt"),
-                                ("Nationalities",  "Nationality",     "fas fa-flag"),
-                    };
-                }
-                @foreach (var lk in lookups)
+                @if (canViewReports)
                 {
-                    bool isLkActive = ctrl == "Lookups" && qtype == lk.Type;
                     <li class="nav-item">
-                        <a class="nav-link @(isLkActive ? "active" : "")"
-                           asp-controller="Lookups" asp-action="Index" asp-route-type="@lk.Type">
-                            <i class="@lk.Icon"></i> @lk.Title
+                        <a class="nav-link @(ctrl == "Reports" ? "active" : "")"
+                           asp-controller="Reports" asp-action="Summary">
+                            <i class="fas fa-chart-bar"></i> Reports
+                        </a>
+                    </li>
+                }
+
+                @if (canManageLookups)
+                {
+                    <div class="nav-section-label">Definitions</div>
+                    @{
+                        var lookups = new (string Type, string Title, string Icon)[]
+                        {
+                            ("CallPurposes",   "Call Purpose",    "fas fa-bullseye"),
+                            ("VisitTypes",     "Visit Type",      "fas fa-hospital-user"),
+                            ("OutcomesOfCall", "Outcome of Call", "fas fa-check-circle"),
+                            ("Doctors",        "Doctor Name",     "fas fa-user-md"),
+                            ("Departments",    "Department",      "fas fa-building"),
+                            ("BookedStatuses", "Booked Status",   "fas fa-calendar-check"),
+                            ("StaffMembers",   "Staff Name",      "fas fa-users"),
+                            ("Sources",        "Source",          "fas fa-share-alt"),
+                            ("Nationalities",  "Nationality",     "fas fa-flag"),
+                        };
+                    }
+                    @foreach (var lk in lookups)
+                    {
+                        bool isLkActive = ctrl == "Lookups" && qtype == lk.Type;
+                        <li class="nav-item">
+                            <a class="nav-link @(isLkActive ? "active" : "")"
+                               asp-controller="Lookups" asp-action="Index" asp-route-type="@lk.Type">
+                                <i class="@lk.Icon"></i> @lk.Title
+                            </a>
+                        </li>
+                    }
+                }
+
+                @if (canManageUsers)
+                {
+                    <div class="nav-section-label">Administration</div>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Users" ? "active" : "")"
+                           asp-controller="Users" asp-action="Index">
+                            <i class="fas fa-users-cog"></i> Users
                         </a>
                     </li>
                 }
@@ -386,7 +407,14 @@
         </div>
         <div class="user-badge">
             <div class="avatar">@(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "A")</div>
-            <span class="d-none d-sm-inline">@User.Identity?.Name</span>
+            <div class="d-none d-sm-flex flex-column" style="line-height:1.2">
+                <span style="font-size:13px;font-weight:600;color:#1e293b">@User.Identity?.Name</span>
+                <span style="font-size:11px;color:#94a3b8">
+                    @if (User.IsInRole("Admin")) { <text>Admin</text> }
+                    else if (User.IsInRole("Supervisor")) { <text>Supervisor</text> }
+                    else { <text>Agent</text> }
+                </span>
+            </div>
         </div>
     </div>
 

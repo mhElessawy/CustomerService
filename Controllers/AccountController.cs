@@ -60,5 +60,9 @@ namespace CustomerServicesSystem.Controllers
             await _signIn.SignOutAsync();
             return RedirectToAction("Login");
         }
+
+        // GET /Account/AccessDenied
+        [AllowAnonymous]
+        public IActionResult AccessDenied() => View();
     }
 }

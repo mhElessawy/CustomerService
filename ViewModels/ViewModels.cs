@@ -98,4 +98,36 @@ namespace CustomerServicesSystem.ViewModels
         public string Label { get; set; } = string.Empty;
         public int Value { get; set; }
     }
+
+    // ─── Users Management ─────────────────────
+    public class UserListItemVM
+    {
+        public string Id { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+        public string Role { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class UserFormVM
+    {
+        public string? Id { get; set; }
+
+        [Required(ErrorMessage = "Full name is required")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email")]
+        public string Email { get; set; } = string.Empty;
+
+        [DataType(DataType.Password)]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
+        public string? Password { get; set; }
+
+        [Required(ErrorMessage = "Role is required")]
+        public string Role { get; set; } = "Agent";
+
+        public bool IsActive { get; set; } = true;
+    }
 }

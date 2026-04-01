@@ -27,17 +27,18 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(o =>
 builder.Services.ConfigureApplicationCookie(o =>
 {
     o.LoginPath = "/Account/Login";
-    o.AccessDeniedPath = "/Account/Login";
+    o.AccessDeniedPath = "/Account/AccessDenied";
 });
 
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// ── Seed admin user ─────────────────────────
+// ── Seed roles + admin user ──────────────────
 using (var scope = app.Services.CreateScope())
 {
     var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 
@@ -50,17 +51,26 @@ using (var scope = app.Services.CreateScope())
         ALTER TABLE Doctors ADD DepartmentId INT NULL
     ");
 
-    if (await userMgr.FindByEmailAsync("admin@css.com") == null)
+    // Seed roles
+    foreach (var role in new[] { "Admin", "Supervisor", "Agent" })
+        if (!await roleMgr.RoleExistsAsync(role))
+            await roleMgr.CreateAsync(new IdentityRole(role));
+
+    // Seed admin user
+    var adminUser = await userMgr.FindByEmailAsync("admin@css.com");
+    if (adminUser == null)
     {
-        var admin = new ApplicationUser
+        adminUser = new ApplicationUser
         {
             UserName = "admin@css.com",
             Email = "admin@css.com",
             FullName = "System Administrator",
             IsActive = true
         };
-        await userMgr.CreateAsync(admin, "Admin@123");
+        await userMgr.CreateAsync(adminUser, "Admin@123");
     }
+    if (!await userMgr.IsInRoleAsync(adminUser, "Admin"))
+        await userMgr.AddToRoleAsync(adminUser, "Admin");
 }
 
 if (!app.Environment.IsDevelopment())

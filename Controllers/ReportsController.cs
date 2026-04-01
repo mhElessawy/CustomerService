@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CustomerServicesSystem.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,Supervisor")]
     public class ReportsController : Controller
     {
         private readonly ApplicationDbContext _db;
