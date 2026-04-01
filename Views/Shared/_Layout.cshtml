@@ -345,21 +345,19 @@
                 @if (canManageLookups)
                 {
                     <div class="nav-section-label">Definitions</div>
-                    @{
-                        var lookups = new (string Type, string Title, string Icon)[]
-                        {
-                            ("CallPurposes",   "Call Purpose",    "fas fa-bullseye"),
-                            ("VisitTypes",     "Visit Type",      "fas fa-hospital-user"),
-                            ("OutcomesOfCall", "Outcome of Call", "fas fa-check-circle"),
-                            ("Doctors",        "Doctor Name",     "fas fa-user-md"),
-                            ("Departments",    "Department",      "fas fa-building"),
-                            ("BookedStatuses", "Booked Status",   "fas fa-calendar-check"),
-                            ("StaffMembers",   "Staff Name",      "fas fa-users"),
-                            ("Sources",        "Source",          "fas fa-share-alt"),
-                            ("Nationalities",  "Nationality",     "fas fa-flag"),
-                        };
-                    }
-                    @foreach (var lk in lookups)
+                    var lookups = new (string Type, string Title, string Icon)[]
+                    {
+                        ("CallPurposes",   "Call Purpose",    "fas fa-bullseye"),
+                        ("VisitTypes",     "Visit Type",      "fas fa-hospital-user"),
+                        ("OutcomesOfCall", "Outcome of Call", "fas fa-check-circle"),
+                        ("Doctors",        "Doctor Name",     "fas fa-user-md"),
+                        ("Departments",    "Department",      "fas fa-building"),
+                        ("BookedStatuses", "Booked Status",   "fas fa-calendar-check"),
+                        ("StaffMembers",   "Staff Name",      "fas fa-users"),
+                        ("Sources",        "Source",          "fas fa-share-alt"),
+                        ("Nationalities",  "Nationality",     "fas fa-flag"),
+                    };
+                    foreach (var lk in lookups)
                     {
                         bool isLkActive = ctrl == "Lookups" && qtype == lk.Type;
                         <li class="nav-item">
