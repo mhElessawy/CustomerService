@@ -6,6 +6,35 @@
     int pageNum = (int)(ViewBag.Page ?? 1);
     int totalPages = (int)(ViewBag.TotalPages ?? 1);
     int total = (int)(ViewBag.TotalRecords ?? 0);
+    var sortBy = filter.SortBy ?? "Date";
+    var sortDir = filter.SortDir ?? "desc";
+
+    // Helper: build sort URL for a column
+    string SortUrl(string col)
+    {
+        var dir = (sortBy == col && sortDir == "asc") ? "desc" : "asc";
+        return Url.Action("Index", new
+        {
+            patientName = filter.PatientName,
+            callPurposeId = filter.CallPurposeId,
+            staffMemberId = filter.StaffMemberId,
+            bookedStatusId = filter.BookedStatusId,
+            departmentId = filter.DepartmentId,
+            dateFrom = filter.DateFrom?.ToString("yyyy-MM-dd"),
+            dateTo = filter.DateTo?.ToString("yyyy-MM-dd"),
+            sortBy = col,
+            sortDir = dir,
+            page = 1
+        }) ?? "#";
+    }
+
+    string SortIcon(string col)
+    {
+        if (sortBy != col) return "<i class='fas fa-sort text-muted ms-1 opacity-50'></i>";
+        return sortDir == "asc"
+            ? "<i class='fas fa-sort-up text-primary ms-1'></i>"
+            : "<i class='fas fa-sort-down text-primary ms-1'></i>";
+    }
 }
 
 <!-- Header -->
@@ -39,6 +68,8 @@
 <div class="card mb-3">
     <div class="card-body py-3">
         <form method="get" class="row g-2 align-items-end">
+            <input type="hidden" name="sortBy" value="@filter.SortBy" />
+            <input type="hidden" name="sortDir" value="@filter.SortDir" />
             <div class="col-md-2">
                 <label class="form-label small mb-1">Patient Name</label>
                 <input type="text" name="PatientName" value="@filter.PatientName"
@@ -105,18 +136,18 @@
             <table class="table table-hover mb-0 small">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Patient Name</th>
+                        <th><a href="@SortUrl("Date")" class="text-decoration-none text-dark">Date @Html.Raw(SortIcon("Date"))</a></th>
+                        <th><a href="@SortUrl("PatientName")" class="text-decoration-none text-dark">Patient Name @Html.Raw(SortIcon("PatientName"))</a></th>
                         <th>Gender</th>
-                        <th>Contact No</th>
+                        <th><a href="@SortUrl("ContactNo")" class="text-decoration-none text-dark">Contact No @Html.Raw(SortIcon("ContactNo"))</a></th>
                         <th>Nationality</th>
                         <th>Call Purpose</th>
                         <th>Visit Type</th>
                         <th>Outcome</th>
                         <th>Doctor</th>
-                        <th>Department</th>
-                        <th>Booked</th>
-                        <th>Staff</th>
+                        <th><a href="@SortUrl("Department")" class="text-decoration-none text-dark">Department @Html.Raw(SortIcon("Department"))</a></th>
+                        <th><a href="@SortUrl("Booked")" class="text-decoration-none text-dark">Booked @Html.Raw(SortIcon("Booked"))</a></th>
+                        <th><a href="@SortUrl("Staff")" class="text-decoration-none text-dark">Staff @Html.Raw(SortIcon("Staff"))</a></th>
                         <th>Source</th>
                         <th class="text-center" style="width:90px">Actions</th>
                     </tr>
@@ -182,6 +213,20 @@
         <!-- Pagination -->
         @if (totalPages > 1)
         {
+            string PageUrl(int p) => Url.Action("Index", new
+            {
+                patientName = filter.PatientName,
+                callPurposeId = filter.CallPurposeId,
+                staffMemberId = filter.StaffMemberId,
+                bookedStatusId = filter.BookedStatusId,
+                departmentId = filter.DepartmentId,
+                dateFrom = filter.DateFrom?.ToString("yyyy-MM-dd"),
+                dateTo = filter.DateTo?.ToString("yyyy-MM-dd"),
+                sortBy = filter.SortBy,
+                sortDir = filter.SortDir,
+                page = p
+            }) ?? "#";
+
             <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
                 <small class="text-muted">Page @pageNum of @totalPages</small>
                 <nav>
@@ -189,22 +234,19 @@
                         @if (pageNum > 1)
                         {
                             <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-page="@(pageNum - 1)"
-                                   asp-route-patientName="@filter.PatientName">‹</a>
+                                <a class="page-link" href="@PageUrl(pageNum - 1)">‹</a>
                             </li>
                         }
                         @for (int p = Math.Max(1, pageNum - 2); p <= Math.Min(totalPages, pageNum + 2); p++)
                         {
                             <li class="page-item @(p == pageNum ? "active" : "")">
-                                <a class="page-link" asp-action="Index" asp-route-page="@p"
-                                   asp-route-patientName="@filter.PatientName">@p</a>
+                                <a class="page-link" href="@PageUrl(p)">@p</a>
                             </li>
                         }
                         @if (pageNum < totalPages)
                         {
                             <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-page="@(pageNum + 1)"
-                                   asp-route-patientName="@filter.PatientName">›</a>
+                                <a class="page-link" href="@PageUrl(pageNum + 1)">›</a>
                             </li>
                         }
                     </ul>

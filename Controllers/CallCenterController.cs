@@ -45,6 +45,48 @@ namespace CustomerServicesSystem.Controllers
                 .Select(x => new { id = x.Id, name = x.Name })
                 .ToList());
 
+        // ── AJAX: check existing record by contactNo / patientName / fileNo ──
+        [HttpGet]
+        public async Task<JsonResult> CheckExistingRecord(string? contactNo, string? patientName, string? fileNo, int currentId = 0)
+        {
+            if (string.IsNullOrWhiteSpace(contactNo) && string.IsNullOrWhiteSpace(patientName) && string.IsNullOrWhiteSpace(fileNo))
+                return Json(new { exists = false });
+
+            CallCenterRecord? record = null;
+
+            if (!string.IsNullOrWhiteSpace(contactNo))
+                record = await _db.CallCenterRecords
+                    .Where(x => x.ContactNo == contactNo.Trim() && x.Id != currentId)
+                    .OrderByDescending(x => x.RecordDate).FirstOrDefaultAsync();
+
+            if (record == null && !string.IsNullOrWhiteSpace(fileNo))
+                record = await _db.CallCenterRecords
+                    .Where(x => x.FileNo == fileNo.Trim() && x.Id != currentId)
+                    .OrderByDescending(x => x.RecordDate).FirstOrDefaultAsync();
+
+            if (record == null) return Json(new { exists = false });
+
+            return Json(new
+            {
+                exists = true,
+                id = record.Id,
+                patientName = record.PatientName ?? "",
+                gender = record.Gender ?? "",
+                fileNo = record.FileNo ?? "",
+                contactNo = record.ContactNo ?? "",
+                nationalityId = record.NationalityId,
+                callPurposeId = record.CallPurposeId,
+                visitTypeId = record.VisitTypeId,
+                outcomeOfCallId = record.OutcomeOfCallId,
+                doctorId = record.DoctorId,
+                departmentId = record.DepartmentId,
+                bookedStatusId = record.BookedStatusId,
+                staffMemberId = record.StaffMemberId,
+                sourceId = record.SourceId,
+                notes = record.Notes ?? ""
+            });
+        }
+
         private SelectList SelectList<T>(IQueryable<T> q, int? selected = null) where T : LookupBase =>
             new(q.Where(x => x.IsActive).OrderBy(x => x.Name).ToList(), "Id", "Name", selected);
 
@@ -72,8 +114,27 @@ namespace CustomerServicesSystem.Controllers
 
             const int pageSize = 20;
             var total = await q.CountAsync();
-            var records = await q.OrderByDescending(x => x.RecordDate)
-                                  .ThenByDescending(x => x.Id)
+
+            // Sorting
+            var sortBy = filter.SortBy ?? "Date";
+            var sortDir = filter.SortDir ?? "desc";
+            IOrderedQueryable<CallCenterRecord> sorted = (sortBy, sortDir) switch
+            {
+                ("PatientName", "asc") => q.OrderBy(x => x.PatientName).ThenByDescending(x => x.Id),
+                ("PatientName", "desc") => q.OrderByDescending(x => x.PatientName).ThenByDescending(x => x.Id),
+                ("ContactNo", "asc") => q.OrderBy(x => x.ContactNo).ThenByDescending(x => x.Id),
+                ("ContactNo", "desc") => q.OrderByDescending(x => x.ContactNo).ThenByDescending(x => x.Id),
+                ("Department", "asc") => q.OrderBy(x => x.Department!.Name).ThenByDescending(x => x.Id),
+                ("Department", "desc") => q.OrderByDescending(x => x.Department!.Name).ThenByDescending(x => x.Id),
+                ("Staff", "asc") => q.OrderBy(x => x.StaffMember!.Name).ThenByDescending(x => x.Id),
+                ("Staff", "desc") => q.OrderByDescending(x => x.StaffMember!.Name).ThenByDescending(x => x.Id),
+                ("Booked", "asc") => q.OrderBy(x => x.BookedStatus!.Name).ThenByDescending(x => x.Id),
+                ("Booked", "desc") => q.OrderByDescending(x => x.BookedStatus!.Name).ThenByDescending(x => x.Id),
+                ("Date", "asc") => q.OrderBy(x => x.RecordDate).ThenBy(x => x.Id),
+                _ => q.OrderByDescending(x => x.RecordDate).ThenByDescending(x => x.Id)
+            };
+
+            var records = await sorted
                                   .Skip((page - 1) * pageSize)
                                   .Take(pageSize)
                                   .ToListAsync();
@@ -132,6 +193,20 @@ namespace CustomerServicesSystem.Controllers
         public async Task<IActionResult> Save(CallCenterFormVM vm)
         {
             if (!ModelState.IsValid) { LoadDropdowns(vm); return View("Form", vm); }
+
+            // منع تكرار رقم الهاتف
+            if (!string.IsNullOrWhiteSpace(vm.ContactNo))
+            {
+                var contactTrimmed = vm.ContactNo.Trim();
+                var duplicate = await _db.CallCenterRecords
+                    .AnyAsync(x => x.ContactNo == contactTrimmed && x.Id != vm.Id);
+                if (duplicate)
+                {
+                    ModelState.AddModelError(nameof(vm.ContactNo), "رقم الهاتف هذا مسجل مسبقاً. لا يمكن تكرار نفس الرقم.");
+                    LoadDropdowns(vm);
+                    return View("Form", vm);
+                }
+            }
 
             if (vm.Id == 0)
             {

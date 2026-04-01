@@ -1,4 +1,4 @@
-@model CustomerServicesSystem.ViewModels.CallCenterFormVM
+﻿@model CustomerServicesSystem.ViewModels.CallCenterFormVM
 @{
     bool isEdit = Model.Id > 0;
     ViewData["Title"] = isEdit ? "Edit Record" : "New Record";
@@ -48,8 +48,9 @@
                     <input asp-for="FileNo" class="form-control" placeholder="File number" />
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">Contact No.</label>
-                    <input asp-for="ContactNo" class="form-control" placeholder="Phone number" />
+                    <label class="form-label fw-semibold">Contact No. <span class="text-danger">*</span></label>
+                    <input asp-for="ContactNo" class="form-control" placeholder="Phone number" id="ContactNo" />
+                    <span asp-validation-for="ContactNo" class="text-danger small"></span>
                 </div>
             </div>
 
@@ -84,7 +85,7 @@
                 </div>
             </div>
 
-            <!-- Row 3: Dropdowns 2 � Department first, then Doctor (filtered by department) -->
+            <!-- Row 3: Dropdowns 2 � Department first, then Doctor (filtered by department) -->
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Department</label>
@@ -124,6 +125,18 @@
                 <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
             </div>
 
+            <!-- Existing record alert -->
+            <div id="existingRecordAlert" class="alert alert-danger alert-dismissible fade show d-none mb-3" role="alert">
+                <strong><i class="fas fa-ban me-1"></i> رقم الهاتف مسجل مسبقاً!</strong>
+                <div id="existingRecordInfo" class="mt-1 small"></div>
+                <div class="mt-2">
+                    <a id="editExistingLink" href="#" class="btn btn-sm btn-primary me-1">
+                        <i class="fas fa-edit me-1"></i> تعديل السجل الموجود
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnDismissExisting">تجاهل</button>
+                </div>
+            </div>
+
             <hr class="my-3" />
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary px-4">
@@ -157,15 +170,76 @@
                     });
             }
 
-            // On department change � clear and reload doctors
+            // On department change� clear and reload doctors
             deptSel.addEventListener('change', function () {
                 loadDoctors(this.value, null);
             });
 
-            // On page load (edit mode) � pre-populate doctors for the saved department
+            // On page load (edit mode) � pre-populate doctors for the saved department
             var initDept   = deptSel.value;
             var initDoctor = '@Model.DoctorId';
             if (initDept) loadDoctors(initDept, initDoctor);
+
+            // ── Check existing record by ContactNo ────────────────────
+            var currentId = @Model.Id;
+            var existingData = null;
+            var contactDuplicate = false;
+            var alert = document.getElementById('existingRecordAlert');
+            var saveBtn = document.querySelector('button[type="submit"]');
+
+            function showDuplicateAlert(data) {
+                existingData = data;
+                contactDuplicate = true;
+                var editUrl = '@Url.Action("Edit", "CallCenter")/' + data.id;
+                document.getElementById('editExistingLink').href = editUrl;
+                var info = '<b>اسم المريض:</b> ' + (data.patientName || '-') +
+                           ' &nbsp;|&nbsp; <b>الجنس:</b> ' + (data.gender || '-') +
+                           ' &nbsp;|&nbsp; <b>رقم الملف:</b> ' + (data.fileNo || '-') +
+                           ' &nbsp;|&nbsp; <b>رقم الهاتف:</b> ' + (data.contactNo || '-');
+                document.getElementById('existingRecordInfo').innerHTML = info;
+                alert.classList.remove('d-none');
+                saveBtn.disabled = true;
+            }
+
+            function hideDuplicateAlert() {
+                existingData = null;
+                contactDuplicate = false;
+                alert.classList.add('d-none');
+                saveBtn.disabled = false;
+            }
+
+            document.getElementById('btnDismissExisting').addEventListener('click', hideDuplicateAlert);
+
+            function checkExisting(contactNo) {
+                var url = '@Url.Action("CheckExistingRecord", "CallCenter")' +
+                    '?currentId=' + currentId + '&contactNo=' + encodeURIComponent(contactNo);
+                fetch(url)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.exists) showDuplicateAlert(data);
+                        else hideDuplicateAlert();
+                    });
+            }
+
+            var contactInput = document.getElementById('ContactNo');
+            if (contactInput) {
+                contactInput.addEventListener('blur', function() {
+                    if (this.value.trim()) checkExisting(this.value.trim());
+                    else hideDuplicateAlert();
+                });
+                contactInput.addEventListener('input', function() {
+                    if (contactDuplicate) hideDuplicateAlert();
+                });
+            }
+
+            // Prevent form submit if duplicate
+            document.querySelector('form').addEventListener('submit', function(e) {
+                if (contactDuplicate) {
+                    e.preventDefault();
+                    alert.classList.remove('d-none');
+                    alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
         }());
     </script>
 }
